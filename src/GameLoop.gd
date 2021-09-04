@@ -13,6 +13,11 @@ const pos_r = Vector2( mid+div, mid)	# right
 const pos_b = Vector2( mid,  mid+div)	# bottom
 const pos_l = Vector2( div, mid)		# left
 
+var ship_l = 0
+var ship_speed = 0.1
+var ship_segment = 0
+var ship_pos
+
 # top handles
 onready var t_in:Node2D = get_node("../handles/top_in")
 onready var t_out:Node2D = get_node("../handles/top_out")
@@ -41,23 +46,24 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	
 	update()
+	ship_l += delta * ship_speed
+	ship_l = fmod(ship_l,1)
+	ship_segment = floor(ship_l * 4)
+	print(ship_segment)
 	pass
 
 func _draw():
-	
-	# Draw points
-	draw_circle(pos_t, 5, Color(255,255,255))
-	draw_circle(pos_r, 5, Color(255,255,255))
-	draw_circle(pos_b, 5, Color(255,255,255))
-	draw_circle(pos_l, 5, Color(255,255,255))
-	
 	# T-R segment
 	var a = pos_t
 	var ao = t_out.global_position
 	var b = pos_r
 	var bi = r_in.global_position
 	draw_section(a,ao,b,bi)
+	# update ship
+	if(ship_segment == 0):
+		ship_pos = get_lerp_pos(a,ao,b,bi, ship_l/0.25)
 	
 	# R-B segment
 	a = pos_r
@@ -65,6 +71,9 @@ func _draw():
 	b = pos_b
 	bi = b_in.global_position
 	draw_section(a,ao,b,bi)
+	# update ship
+	if(ship_segment == 1):
+		ship_pos = get_lerp_pos(a,ao,b,bi, (ship_l-0.25)/0.25)
 	
 	# B-L segment
 	a = pos_b
@@ -72,14 +81,28 @@ func _draw():
 	b = pos_l
 	bi = l_in.global_position
 	draw_section(a,ao,b,bi)
-	
+	# update ship
+	if(ship_segment == 2):
+		ship_pos = get_lerp_pos(a,ao,b,bi, (ship_l-0.5)/0.25)
+		
 	# L-T segment
 	a = pos_l
 	ao = l_out.global_position
 	b = pos_t
 	bi = t_in.global_position
 	draw_section(a,ao,b,bi)
+	# update ship
+	if(ship_segment == 3):
+		ship_pos = get_lerp_pos(a,ao,b,bi, (ship_l-0.75)/0.25)
 	
+	# Draw points
+	draw_circle(pos_t, 5, Color(255,255,255))
+	draw_circle(pos_r, 5, Color(255,255,255))
+	draw_circle(pos_b, 5, Color(255,255,255))
+	draw_circle(pos_l, 5, Color(255,255,255))
+	
+	# draw ship
+	draw_circle(ship_pos, 10, Color(255,255,0))
 	
 func draw_section(a:Vector2, ao:Vector2, b:Vector2, bi:Vector2):
 	var sps : float = steps_per_section * 1.0
